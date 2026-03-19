@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { MMKV } from 'react-native-mmkv';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Song } from '../services/api';
 
-// MMKV is aliased to an localStorage-backed mock on web via metro.config.js
-// On native it uses the real MMKV native module for high-performance storage
-const mmkvStorage = new MMKV({ id: 'player-storage' });
+// Store configuration with AsyncStorage for cross-platform stability
+const storage = {
+    getItem: (name: string) => AsyncStorage.getItem(name),
+    setItem: (name: string, value: string) => AsyncStorage.setItem(name, value),
+    removeItem: (name: string) => AsyncStorage.removeItem(name),
+};
 
 export type RepeatModeType = 0 | 1 | 2; // Off | Track | Queue
 
@@ -69,11 +72,7 @@ export const usePlayerStore = create<PlayerState>()(
         }),
         {
             name: 'player-storage',
-            storage: createJSONStorage(() => ({
-                setItem: (name, value) => mmkvStorage.set(name, value),
-                getItem: (name) => mmkvStorage.getString(name) ?? null,
-                removeItem: (name) => mmkvStorage.delete(name),
-            })),
+            storage: createJSONStorage(() => storage),
             partialize: (state) => ({
                 queue: state.queue,
                 repeatMode: state.repeatMode,
