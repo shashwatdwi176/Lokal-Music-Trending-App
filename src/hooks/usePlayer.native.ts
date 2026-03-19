@@ -3,7 +3,9 @@ import TrackPlayer, {
     usePlaybackState,
     useProgress,
     State as PlaybackState,
-    RepeatMode as NativeRepeatMode
+    RepeatMode as NativeRepeatMode,
+    useTrackPlayerEvents,
+    Event
 } from 'react-native-track-player';
 import { usePlayerStore, RepeatModeType } from '../store/playerStore';
 import { Song, getDownloadUrl, getImageUrl } from '../services/api';
@@ -41,6 +43,14 @@ export const usePlayer = () => {
 
     const queueRef = useRef(queue);
     useEffect(() => { queueRef.current = queue; }, [queue]);
+
+    useTrackPlayerEvents([Event.PlaybackActiveTrackChanged], async (event) => {
+        if (event.type === Event.PlaybackActiveTrackChanged && event.track != null) {
+            const track = event.track;
+            const song = queueRef.current.find((s) => s.id === track.id);
+            if (song) setCurrentTrack(song);
+        }
+    });
 
     const playSong = useCallback(async (song: Song, newQueue?: Song[]) => {
         const songQueue = newQueue ?? [song];
@@ -128,7 +138,7 @@ export const usePlayer = () => {
 
     const setShuffleMode = useCallback(async (shuffle: boolean) => {
         setStoreShuffleMode(shuffle);
-       
+
     }, [setStoreShuffleMode]);
 
     return {

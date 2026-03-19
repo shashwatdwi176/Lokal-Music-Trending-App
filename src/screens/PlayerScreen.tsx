@@ -62,7 +62,7 @@ const PlayerScreen: React.FC = () => {
           </Text>
         </View>
 
-        <TouchableOpacity style={styles.headerBtn}>
+        <TouchableOpacity onPress={() => navigation.navigate('Queue' as never)} style={styles.headerBtn}>
           <ListMusic size={22} color="#fff" />
         </TouchableOpacity>
       </View>
